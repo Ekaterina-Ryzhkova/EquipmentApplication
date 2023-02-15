@@ -1,0 +1,110 @@
+﻿@page "/type"
+
+@using System
+@using System.Linq
+
+@inject MudBlazor.ISnackbar snackbar
+@inject IJSRuntime JsRuntime
+
+<h3>Type</h3>
+
+<MudCard Elevation="25">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Добавить/обновить тип оборудования</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <EditForm OnValidSubmit="Add" Model="@type">
+            <MudTextField @bind-Value="type.TypeName" Label="Наименование типа">
+            </MudTextField>
+            <br />
+            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Add">Добавить/Обновить</MudButton>
+        </EditForm>
+    </MudCardContent>
+</MudCard>
+
+<br />
+
+<MudTable Items="GetAll()" Filter="new Func<TypeEquipment,bool>(Search)" @bind-type="type">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Список типов оборудования</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString" Placeholder="Искать..."></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<TypeEquipment, object>(x=>x.TypeId)">Id</MudTableSortLabel></MudTh>
+        <MudTh>Тип оборудования</MudTh>
+        <MudTh>Действия</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Type Name">@context.TypeId</MudTd>
+        <MudTd DataLabel="Type Name">@context.TypeName</MudTd>
+        <MudTd DataLabel="Actions">
+            <MudFab OnClick="@(() => Update(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
+            <MudFab OnClick="@(() => Delete(context))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small"></MudFab>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private string searchString = "";
+    private TypeEquipment type = new TypeEquipment();
+    private List<TypeEquipment> typeequipments = new List<TypeEquipment>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        typeequipments = typeEquipmentService.GetAll();
+    }
+
+
+    private bool Search(TypeEquipment typeEquipment)
+    {
+        if (string.IsNullOrWhiteSpace(searchString)) return true;
+        if (typeEquipment.TypeName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private List<TypeEquipment> GetAll()
+    {
+        typeequipments = typeEquipmentService.GetAll();
+
+        return typeequipments;
+    }
+
+    private void Add()
+    {
+        if (type.TypeId == 0)
+        {
+            typeEquipmentService.Add(type);
+            snackbar.Add("Добавлен новый тип оборудования.",
+            Severity.Success);
+        }
+        else
+        {
+            typeEquipmentService.Update(type);
+            snackbar.Add("Тип оборудования изменен.",
+            Severity.Success);
+        }
+
+        type = new TypeEquipment();
+        GetAll();
+    }
+
+    private void Update(TypeEquipment Typeequip)
+    {
+        type = Typeequip;
+        StateHasChanged();
+    }
+
+    private async Task Delete(TypeEquipment Typeequip)
+    {
+        typeEquipmentService.Delete(Typeequip);
+        snackbar.Add("Тип оборудования удален.",
+    Severity.Success);
+        GetAll();
+    }
+}

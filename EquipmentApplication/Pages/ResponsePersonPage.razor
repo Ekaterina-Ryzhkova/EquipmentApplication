@@ -1,0 +1,109 @@
+﻿@page "/person"
+
+@using System
+@using System.Linq
+
+@inject MudBlazor.ISnackbar snackbar
+@inject IJSRuntime JsRuntime
+
+<h3>Persons</h3>
+
+<MudCard Elevation="25">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Add person</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <EditForm OnValidSubmit="Add" Model="@person">
+            <MudTextField @bind-Value="person.Initials" Label="Введите инициалы">
+            </MudTextField>
+            <br />
+            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Add">Add</MudButton>
+        </EditForm>
+    </MudCardContent>
+</MudCard>
+
+<br />
+
+<MudTable Items="GetAll()" Filter="new Func<ResponsePerson,bool>(Search)" @bind-type="person">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Список ответственных лиц</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString" Placeholder="Search For..."></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<ResponsePerson, object>(x=>x.PersonId)">Id</MudTableSortLabel></MudTh>
+        <MudTh>Наименование ответственного лица</MudTh>
+        <MudTh>Действия</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Type Name">@context.PersonId</MudTd>
+        <MudTd DataLabel="Type Name">@context.Initials</MudTd>
+        <MudTd DataLabel="Actions">
+            <MudFab OnClick="@(() => Update(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
+            <MudFab OnClick="@(() => Delete(context))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small"></MudFab>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private string searchString = "";
+    private ResponsePerson person = new ResponsePerson();
+    private List<ResponsePerson> people = new List<ResponsePerson>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        people = responsePersonService.GetAll();
+    }
+
+    private bool Search(ResponsePerson responsePerson)
+    {
+        if (string.IsNullOrWhiteSpace(searchString)) return true;
+        if (responsePerson.Initials.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private List<ResponsePerson> GetAll()
+    {
+        people = responsePersonService.GetAll();
+
+        return people;
+    }
+
+    private void Add()
+    {
+        if (person.PersonId == 0)
+        {
+            responsePersonService.Add(person);
+            snackbar.Add("Добавлено новое ответственное лицо.",
+            Severity.Success);
+        }
+        else
+        {
+            responsePersonService.Update(person);
+            snackbar.Add("Данные об ответственном лице изменены.",
+            Severity.Success);
+        }
+
+        person = new ResponsePerson();
+        GetAll();
+    }
+
+    private void Update(ResponsePerson responsePerson)
+    {
+        person = responsePerson;
+        StateHasChanged();
+    }
+
+    private async Task Delete(ResponsePerson responsePerson)
+    {
+        responsePersonService.Delete(responsePerson);
+        snackbar.Add("Ответственное лицо удалено.",
+    Severity.Success);
+        GetAll();
+    }
+}

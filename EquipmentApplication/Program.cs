@@ -1,8 +1,10 @@
 using EquipmentApplication.Model;
+using EquipmentApplication.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,14 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+//OtherServices
+builder.Services.AddMudServices();
+
+// MyServices
+builder.Services.AddScoped<EquipmentService>();
+builder.Services.AddScoped<TypeEquipmentService>();
+builder.Services.AddScoped<ResponsePersonService>();
 
 var app = builder.Build();
 

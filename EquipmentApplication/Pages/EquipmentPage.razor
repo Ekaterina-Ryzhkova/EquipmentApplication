@@ -1,0 +1,179 @@
+﻿@page "/equipment"
+
+@using System
+@using System.Linq
+
+@inject MudBlazor.ISnackbar snackbar
+@inject IJSRuntime JsRuntime
+
+<h3>Equipment List</h3>
+
+<MudCard Elevation="25">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Add equipment</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <EditForm OnValidSubmit="Add" Model="@equipment">
+            
+            <MudGrid>
+
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="equipment.InventoryId" Label="Инвентарный номер" Variant="Variant.Text"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="equipment.FullName" Label="Полное наименование оборудования" Variant="Variant.Text"></MudTextField>
+                </MudItem>
+                @*Тип оборудования*@
+                <MudItem xs="12" sm="4" md="6">
+                    <MudSelect T="int" Label="Select Type" @bind-Value="equipment.TypeEquipment.TypeId">
+                        @foreach(var type in types)
+                        {
+                            <MudSelectItem T="int" Value="@type.TypeId">@type.TypeName</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="equipment.Model" Label="Модель" Variant="Variant.Text"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudDatePicker @bind-Date="date" Label="Дата ввода в эксплуатацию"></MudDatePicker>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="equipment.StorageLocation" Label="Место хранения" Variant="Variant.Text"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="equipment.DestinationLocation" Label="Место назначения" Variant="Variant.Text"></MudTextField>
+                </MudItem>
+                @*Ответственное лицо*@
+                <MudItem xs="12" sm="4" md="6">
+                    <MudSelect T="int" Label="Select Person" @bind-Value="equipment.ResponsePerson.PersonId">
+                        @foreach (var person in people)
+                        {
+                            <MudSelectItem T="int" Value="@person.PersonId">@person.Initials</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="equipment.Comment" Label="Комментарий" Variant="Variant.Text"></MudTextField>
+                </MudItem>
+            </MudGrid>
+
+            <br />
+            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Add">Add</MudButton>
+        </EditForm>
+    </MudCardContent>
+</MudCard>
+
+<br />
+
+<MudTable Items="GetAll()" Filter="new Func<Equipment,bool>(Search)" @bind-equipment="equipment">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Список ответственных лиц</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString" Placeholder="Search For..."></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<Equipment, object>(x=>x.Id)">Id</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Equipment, object>(x=>x.InventoryId)">Inventory Id</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Equipment, object>(x=>x.FullName)">Full Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Equipment, object>(x=>x.TypeEquipment.TypeName)">Type Equipment</MudTableSortLabel></MudTh>
+@*        <MudTh>Model</MudTh>
+        <MudTh>Date</MudTh>
+        <MudTh>StorageLocation</MudTh>
+        <MudTh>DestinationLocation</MudTh>
+        <MudTh>ResponsePerson</MudTh>
+        <MudTh>Comment</MudTh>*@
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Type Name">@context.Id</MudTd>
+        <MudTd DataLabel="Type Name">@context.InventoryId</MudTd>
+        <MudTd DataLabel="Type Name">@context.FullName</MudTd>
+        <MudTd DataLabel="Type Name">@context.TypeEquipment.TypeName</MudTd>
+@*        <MudTd DataLabel="Type Name">@context.Model</MudTd>
+        <MudTd DataLabel="Type Name">@context.DeliveryDate</MudTd>
+        <MudTd DataLabel="Type Name">@context.StorageLocation</MudTd>
+        <MudTd DataLabel="Type Name">@context.DestinationLocation</MudTd>
+        <MudTd DataLabel="Type Name">@context.ResponsePerson</MudTd>
+        <MudTd DataLabel="Type Name">@context.Comment</MudTd>*@
+        <MudTd DataLabel="Actions">
+            <MudFab OnClick="@(() => Update(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
+            <MudFab OnClick="@(() => Delete(context))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small"></MudFab>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private string searchString = "";
+
+    private Equipment equipment = new Equipment();
+    private ResponsePerson person = new ResponsePerson();
+    private TypeEquipment type = new TypeEquipment();
+
+    private List<Equipment> equipments = new List<Equipment>();
+    private List<ResponsePerson> people = new List<ResponsePerson>();
+    private List<TypeEquipment> types = new List<TypeEquipment>();
+
+    DateTime? date = DateTime.Today;
+
+    protected override async Task OnInitializedAsync()
+    {
+        people = responsePersonService.GetAll();
+        types = typeEquipmentService.GetAll();
+        equipments = equipmentService.GetAll();
+    }
+
+    private bool Search(Equipment equip)
+    {
+        if (string.IsNullOrWhiteSpace(searchString)) return true;
+        if (equip.FullName.Contains(searchString, StringComparison.OrdinalIgnoreCase) 
+        || equip.StorageLocation.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+        || equip.DestinationLocation.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+        || equip.InventoryId.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private List<Equipment> GetAll()
+    {
+        equipments = equipmentService.GetAll();
+
+        return equipments;
+    }
+
+    private void Add()
+    {
+        if (equipment.Id == 0)
+        {
+            equipmentService.Add(equipment);
+            snackbar.Add("Добавлено новое оборудование.",
+            Severity.Success);
+        }
+        else
+        {
+            equipmentService.Update(equipment);
+            snackbar.Add("Данные об оборудовании изменены.",
+            Severity.Success);
+        }
+
+        equipment = new Equipment();
+        GetAll();
+    }
+
+    private void Update(Equipment equip)
+    {
+        equipment = equip;
+        StateHasChanged();
+    }
+
+    private async Task Delete(Equipment equipment)
+    {
+        equipmentService.Delete(equipment);
+        snackbar.Add("Оборудование удалено.",
+    Severity.Success);
+        GetAll();
+    }
+}

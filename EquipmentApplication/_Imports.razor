@@ -1,4 +1,6 @@
 ﻿@using System.Net.Http
+@using EquipmentApplication.Services;
+@using EquipmentApplication.Model;
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
@@ -8,3 +10,9 @@
 @using Microsoft.JSInterop
 @using EquipmentApplication
 @using EquipmentApplication.Shared
+@using MudBlazor
+
+@inject TypeEquipmentService typeEquipmentService
+@inject ResponsePersonService responsePersonService
+@inject EquipmentService equipmentService
+

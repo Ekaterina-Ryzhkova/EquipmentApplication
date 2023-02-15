@@ -16,7 +16,7 @@ namespace EquipmentApplication.Model
         [Required]
         public string Model { get; set; } = string.Empty;
         [Required]
-        public DateTime DeliveryDate { get; set; }
+        public DateTime? DeliveryDate { get; set; }
         [Required]
         public string StorageLocation { get; set; } = string.Empty;
         [Required]

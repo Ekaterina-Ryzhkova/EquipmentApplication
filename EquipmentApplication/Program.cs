@@ -25,13 +25,13 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-//OtherServices
-builder.Services.AddMudServices();
-
 // MyServices
 builder.Services.AddScoped<EquipmentService>();
 builder.Services.AddScoped<TypeEquipmentService>();
 builder.Services.AddScoped<ResponsePersonService>();
+
+//OtherServices
+builder.Services.AddMudServices();
 
 var app = builder.Build();
 

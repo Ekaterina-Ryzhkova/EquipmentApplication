@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace EquipmentApplication.Model
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public partial class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {

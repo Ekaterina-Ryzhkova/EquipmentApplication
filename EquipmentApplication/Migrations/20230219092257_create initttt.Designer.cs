@@ -4,6 +4,7 @@ using EquipmentApplication.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EquipmentApplication.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230219092257_create initttt")]
+    partial class createinitttt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,53 +59,58 @@ namespace EquipmentApplication.Migrations
                     b.Property<int>("PersonId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ResponsePersonPersonId")
+                        .HasColumnType("int");
+
                     b.Property<string>("StorageLocation")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TypeEquipmentTypeId")
+                        .HasColumnType("int");
 
                     b.Property<int>("TypeId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PersonId");
+                    b.HasIndex("ResponsePersonPersonId");
 
-                    b.HasIndex("TypeId");
+                    b.HasIndex("TypeEquipmentTypeId");
 
                     b.ToTable("Equipment");
                 });
 
             modelBuilder.Entity("EquipmentApplication.Model.ResponsePerson", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("PersonId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PersonId"));
 
-                    b.Property<string>("FullName")
+                    b.Property<string>("Initials")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Position")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
+                    b.HasKey("PersonId");
 
                     b.ToTable("ResponsePerson");
                 });
 
             modelBuilder.Entity("EquipmentApplication.Model.TypeEquipment", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TypeId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TypeId"));
 
                     b.Property<string>("TypeName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("TypeId");
 
                     b.ToTable("TypeEquipment");
                 });
@@ -110,30 +118,16 @@ namespace EquipmentApplication.Migrations
             modelBuilder.Entity("EquipmentApplication.Model.Equipment", b =>
                 {
                     b.HasOne("EquipmentApplication.Model.ResponsePerson", "ResponsePerson")
-                        .WithMany("Equipments")
-                        .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("ResponsePersonPersonId");
 
                     b.HasOne("EquipmentApplication.Model.TypeEquipment", "TypeEquipment")
-                        .WithMany("Equipments")
-                        .HasForeignKey("TypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("TypeEquipmentTypeId");
 
                     b.Navigation("ResponsePerson");
 
                     b.Navigation("TypeEquipment");
-                });
-
-            modelBuilder.Entity("EquipmentApplication.Model.ResponsePerson", b =>
-                {
-                    b.Navigation("Equipments");
-                });
-
-            modelBuilder.Entity("EquipmentApplication.Model.TypeEquipment", b =>
-                {
-                    b.Navigation("Equipments");
                 });
 #pragma warning restore 612, 618
         }

@@ -16,7 +16,9 @@
     </MudCardHeader>
     <MudCardContent>
         <EditForm OnValidSubmit="Add" Model="@person">
-            <MudTextField @bind-Value="person.Initials" Label="Введите инициалы">
+            <MudTextField @bind-Value="person.FullName" Label="Введите ФИО">
+            </MudTextField>
+            <MudTextField @bind-Value="person.Position" Label="Введите должность">
             </MudTextField>
             <br />
             <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Add">Add</MudButton>
@@ -33,13 +35,15 @@
         <MudTextField @bind-Value="searchString" Placeholder="Search For..."></MudTextField>
     </ToolBarContent>
     <HeaderContent>
-        <MudTh><MudTableSortLabel SortBy="new Func<ResponsePerson, object>(x=>x.PersonId)">Id</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<ResponsePerson, object>(x=>x.Id)">Id</MudTableSortLabel></MudTh>
         <MudTh>Наименование ответственного лица</MudTh>
+        <MudTh>Должность</MudTh>
         <MudTh>Действия</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Type Name">@context.PersonId</MudTd>
-        <MudTd DataLabel="Type Name">@context.Initials</MudTd>
+        <MudTd DataLabel="Type Name">@context.Id</MudTd>
+        <MudTd DataLabel="Type Name">@context.FullName</MudTd>
+        <MudTd DataLabel="Type Name">@context.Position</MudTd>
         <MudTd DataLabel="Actions">
             <MudFab OnClick="@(() => Update(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
             <MudFab OnClick="@(() => Delete(context))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small"></MudFab>
@@ -60,7 +64,7 @@
     private bool Search(ResponsePerson responsePerson)
     {
         if (string.IsNullOrWhiteSpace(searchString)) return true;
-        if (responsePerson.Initials.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        if (responsePerson.FullName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
@@ -76,7 +80,7 @@
 
     private void Add()
     {
-        if (person.PersonId == 0)
+        if (person.Id == 0)
         {
             responsePersonService.Add(person);
             snackbar.Add("Добавлено новое ответственное лицо.",

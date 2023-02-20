@@ -1,4 +1,5 @@
 ﻿using EquipmentApplication.Model;
+using EquipmentApplication.Shared;
 
 namespace EquipmentApplication.Services
 {

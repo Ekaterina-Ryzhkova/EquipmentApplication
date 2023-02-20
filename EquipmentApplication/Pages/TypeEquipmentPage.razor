@@ -33,12 +33,12 @@
         <MudTextField @bind-Value="searchString" Placeholder="Искать..."></MudTextField>
     </ToolBarContent>
     <HeaderContent>
-        <MudTh><MudTableSortLabel SortBy="new Func<TypeEquipment, object>(x=>x.TypeId)">Id</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<TypeEquipment, object>(x=>x.Id)">Id</MudTableSortLabel></MudTh>
         <MudTh>Тип оборудования</MudTh>
         <MudTh>Действия</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Type Name">@context.TypeId</MudTd>
+        <MudTd DataLabel="Type Name">@context.Id</MudTd>
         <MudTd DataLabel="Type Name">@context.TypeName</MudTd>
         <MudTd DataLabel="Actions">
             <MudFab OnClick="@(() => Update(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
@@ -77,7 +77,7 @@
 
     private void Add()
     {
-        if (type.TypeId == 0)
+        if (type.Id == 0)
         {
             typeEquipmentService.Add(type);
             snackbar.Add("Добавлен новый тип оборудования.",

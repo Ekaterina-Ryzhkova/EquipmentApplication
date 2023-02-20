@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using EquipmentApplication.Model;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace EquipmentApplication.Model
 {
@@ -10,8 +12,8 @@ namespace EquipmentApplication.Model
         {
         }
 
-        public DbSet<Equipment> Equipment { get; set; }
-        public DbSet<TypeEquipment> TypeEquipment { get; set; }
-        public DbSet<ResponsePerson> ResponsePerson { get; set; }
+        public DbSet<Equipment> Equipment { get; set; } = null!;
+        public DbSet<TypeEquipment> TypeEquipment { get; set; } = null!;
+        public DbSet<ResponsePerson> ResponsePerson { get; set; } = null!;
     }
 }

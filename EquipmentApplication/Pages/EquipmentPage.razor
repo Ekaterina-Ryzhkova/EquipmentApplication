@@ -2,6 +2,7 @@
 
 @using System
 @using System.Linq
+@using EquipmentApplication.Shared
 
 @inject MudBlazor.ISnackbar snackbar
 @inject IJSRuntime JsRuntime
@@ -25,12 +26,11 @@
                 <MudItem xs="12" sm="4" md="6">
                     <MudTextField @bind-Value="equipment.FullName" Label="Полное наименование оборудования" Variant="Variant.Text"></MudTextField>
                 </MudItem>
-                @*Тип оборудования*@
                 <MudItem xs="12" sm="4" md="6">
                     <MudSelect T="int" Label="Select Type" @bind-Value="equipment.TypeId">
                         @foreach(var item in types)
                         {
-                            <MudSelectItem T="int" Value="@item.TypeId">@item.TypeName</MudSelectItem>
+                            <MudSelectItem T="int" Value="@item.Id">@item.TypeName</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
@@ -38,7 +38,7 @@
                     <MudTextField @bind-Value="equipment.Model" Label="Модель" Variant="Variant.Text"></MudTextField>
                 </MudItem>
                 <MudItem xs="12" sm="4" md="6">
-                    <MudDatePicker @bind-Date="equipment.DeliveryDate"  Label="Дата ввода в эксплуатацию"></MudDatePicker>
+                    <MudDatePicker @bind-Date="equipment.DeliveryDate" DateFormat="dd.MM.yyyy" Label="Дата ввода в эксплуатацию"></MudDatePicker>
                 </MudItem>
                 <MudItem xs="12" sm="4" md="6">
                     <MudTextField @bind-Value="equipment.StorageLocation" Label="Место хранения" Variant="Variant.Text"></MudTextField>
@@ -46,12 +46,11 @@
                 <MudItem xs="12" sm="4" md="6">
                     <MudTextField @bind-Value="equipment.DestinationLocation" Label="Место назначения" Variant="Variant.Text"></MudTextField>
                 </MudItem>
-                @*Ответственное лицо*@
                 <MudItem xs="12" sm="4" md="6">
-                    <MudSelect T="int" Label="Select Person" @bind-Value="equipment.PersonId">
+                    <MudSelect T="int" Label="Ответственное  лицо" @bind-Value="equipment.PersonId">
                         @foreach (var item in people)
                         {
-                            <MudSelectItem T="int" Value="@item.PersonId">@item.Initials</MudSelectItem>
+                            <MudSelectItem T="int" Value="@item.Id">@item.FullName</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
@@ -61,7 +60,7 @@
             </MudGrid>
 
             <br />
-            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Add">Add</MudButton>
+            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Add">Добавить</MudButton>
         </EditForm>
     </MudCardContent>
 </MudCard>
@@ -78,26 +77,26 @@
     </ToolBarContent>
     <HeaderContent>
         <MudTh><MudTableSortLabel SortBy="new Func<Equipment, object>(x=>x.Id)">Id</MudTableSortLabel></MudTh>
-        <MudTh>Inventory Id</MudTh>
-        <MudTh>Full Name</MudTh>
-        <MudTh>Type Equipment</MudTh>
-        <MudTh>Model</MudTh>
-        <MudTh>Date</MudTh>
-        <MudTh>StorageLocation</MudTh>
-        <MudTh>DestinationLocation</MudTh>
-        <MudTh>ResponsePerson</MudTh>
-        <MudTh>Comment</MudTh>
+        <MudTh>ИНВ.№</MudTh>
+        <MudTh>Наименование</MudTh>
+        <MudTh>Тип</MudTh>
+        <MudTh>Модель</MudTh>
+        <MudTh>Дата</MudTh>
+        <MudTh>Место хранения</MudTh>
+        <MudTh>Место назначения</MudTh>
+        <MudTh>Ответственное лицо</MudTh>
+        <MudTh>Комментарий</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Type Name">@context.Id</MudTd>
         <MudTd DataLabel="Type Name">@context.InventoryId</MudTd>
         <MudTd DataLabel="Type Name">@context.FullName</MudTd>
-        <MudTd DataLabel="Type Name">@context.TypeEquipment.TypeId</MudTd>
+        <MudTd DataLabel="Type Name">@context.TypeEquipment.TypeName</MudTd>
         <MudTd DataLabel="Type Name">@context.Model</MudTd>
-        <MudTd DataLabel="Type Name">@context.DeliveryDate</MudTd>
+        <MudTd DataLabel="Type Name">@context.DeliveryDate;</MudTd>
         <MudTd DataLabel="Type Name">@context.StorageLocation</MudTd>
         <MudTd DataLabel="Type Name">@context.DestinationLocation</MudTd>
-        <MudTd DataLabel="Type Name">@context.ResponsePerson.Initials</MudTd>
+        <MudTd DataLabel="Type Name">@context.ResponsePerson.FullName</MudTd>
         <MudTd DataLabel="Type Name">@context.Comment</MudTd>
         <MudTd DataLabel="Actions">
             <MudFab OnClick="@(() => Update(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
@@ -175,7 +174,7 @@
         StateHasChanged();
     }
 
-    private async Task Delete(Equipment equipment)
+    private void Delete(Equipment equipment)
     {
         equipmentService.Delete(equipment);
         snackbar.Add("Оборудование удалено.",

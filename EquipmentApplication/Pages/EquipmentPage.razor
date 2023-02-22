@@ -3,85 +3,27 @@
 @using System
 @using System.Linq
 @using EquipmentApplication.Shared
+@using static MudBlazor.CategoryTypes;
 
 @inject MudBlazor.ISnackbar snackbar
+@inject IDialogService DialogService
 @inject IJSRuntime JsRuntime
 
-<h3>Equipment List</h3>
-
-<MudCard Elevation="25">
-    <MudCardHeader>
-        <CardHeaderContent>
-            <MudText Typo="Typo.h6">Add equipment</MudText>
-        </CardHeaderContent>
-    </MudCardHeader>
-    <MudCardContent>
-        <EditForm OnValidSubmit="Add" Model="@equipment">
-            
-            <MudGrid>
-
-                <MudItem xs="12" sm="4" md="6">
-                    <MudTextField @bind-Value="equipment.InventoryId" Label="Инвентарный номер" Variant="Variant.Text"></MudTextField>
-                </MudItem>
-                <MudItem xs="12" sm="4" md="6">
-                    <MudTextField @bind-Value="equipment.FullName" Label="Полное наименование оборудования" Variant="Variant.Text"></MudTextField>
-                </MudItem>
-                <MudItem xs="12" sm="4" md="6">
-                    <MudSelect T="int" Label="Select Type" @bind-Value="equipment.TypeId">
-                        @foreach(var item in types)
-                        {
-                            <MudSelectItem T="int" Value="@item.Id">@item.TypeName</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                <MudItem xs="12" sm="4" md="6">
-                    <MudTextField @bind-Value="equipment.Model" Label="Модель" Variant="Variant.Text"></MudTextField>
-                </MudItem>
-                <MudItem xs="12" sm="4" md="6">
-                    <MudDatePicker @bind-Date="equipment.DeliveryDate" DateFormat="dd.MM.yyyy" Label="Дата ввода в эксплуатацию"></MudDatePicker>
-                </MudItem>
-                <MudItem xs="12" sm="4" md="6">
-                    <MudTextField @bind-Value="equipment.StorageLocation" Label="Место хранения" Variant="Variant.Text"></MudTextField>
-                </MudItem>
-                <MudItem xs="12" sm="4" md="6">
-                    <MudTextField @bind-Value="equipment.DestinationLocation" Label="Место назначения" Variant="Variant.Text"></MudTextField>
-                </MudItem>
-                <MudItem xs="12" sm="4" md="6">
-                    <MudSelect T="int" Label="Ответственное  лицо" @bind-Value="equipment.PersonId">
-                        @foreach (var item in people)
-                        {
-                            <MudSelectItem T="int" Value="@item.Id">@item.FullName</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                <MudItem xs="12" sm="4" md="6">
-                    <MudTextField @bind-Value="equipment.Comment" Label="Комментарий" Variant="Variant.Text"></MudTextField>
-                </MudItem>
-            </MudGrid>
-
-            <br />
-            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Add">Добавить</MudButton>
-        </EditForm>
-    </MudCardContent>
-</MudCard>
-
-<br />
-
-
+<MudBreadcrumbs Items="_items"></MudBreadcrumbs>
 
 <MudTable RowsPerPage="5" @ref="@_table" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info" Style="color: white" Elevation="25" Items="GetAll()" Filter="new Func<Equipment,bool>(Search)" @bind-equipment="equipment">
     <ToolBarContent>
-        <MudText Typo="Typo.h6">Список ответственных лиц</MudText>
+        <MudText Typo="Typo.h6" Color="Color.Dark">Список оборудования</MudText>
         <MudSpacer />
-        <MudTextField @bind-Value="searchString" Placeholder="Search For..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudTextField @bind-Value="searchString" Placeholder="Искать..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
     <HeaderContent>
         <MudTh><MudTableSortLabel SortBy="new Func<Equipment, object>(x=>x.Id)">Id</MudTableSortLabel></MudTh>
         <MudTh>ИНВ.№</MudTh>
-        <MudTh>Наименование</MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Equipment, object>(x=>x.FullName)">Наименование</MudTableSortLabel></MudTh>
         <MudTh>Тип</MudTh>
         <MudTh>Модель</MudTh>
-        <MudTh>Дата</MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Equipment, object>(x=>x.DeliveryDate)">Дата</MudTableSortLabel></MudTh>
         <MudTh>Место хранения</MudTh>
         <MudTh>Место назначения</MudTh>
         <MudTh>Ответственное лицо</MudTh>
@@ -93,13 +35,13 @@
         <MudTd DataLabel="Type Name">@context.FullName</MudTd>
         <MudTd DataLabel="Type Name">@context.TypeEquipment.TypeName</MudTd>
         <MudTd DataLabel="Type Name">@context.Model</MudTd>
-        <MudTd DataLabel="Type Name">@context.DeliveryDate;</MudTd>
+        <MudTd DataLabel="Type Name">@DeleteZeroNumbersToReturnDate(@context.DeliveryDate).ToString("dd.MM.yyyy")</MudTd>
         <MudTd DataLabel="Type Name">@context.StorageLocation</MudTd>
         <MudTd DataLabel="Type Name">@context.DestinationLocation</MudTd>
         <MudTd DataLabel="Type Name">@context.ResponsePerson.FullName</MudTd>
         <MudTd DataLabel="Type Name">@context.Comment</MudTd>
         <MudTd DataLabel="Actions">
-            <MudFab OnClick="@(() => Update(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
+            <MudFab OnClick="@(() => OpenUpdateDialog(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
             <MudFab OnClick="@(() => Delete(context))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small"></MudFab>
         </MudTd>
     </RowTemplate>
@@ -107,6 +49,15 @@
         <MudPagination ShowFirstButton="true" ShowLastButton="true" SelectedChanged="PageChanged" Count="@((_table.GetFilteredItemsCount() + _table.RowsPerPage - 1) / _table.RowsPerPage)" Class="pa-4" />
     </PagerContent>
 </MudTable>
+
+<MudButton Href="addEquipment"
+               Variant="Variant.Filled"
+               EndIcon="@Icons.Material.Filled.Add"
+               Color="Color.Primary"
+               Class="pa-3 mt-4">
+        Добавить
+</MudButton>
+
 
 @code {
     private string searchString = "";
@@ -121,6 +72,12 @@
     private List<Equipment> equipments = new List<Equipment>();
     private List<ResponsePerson> people = new List<ResponsePerson>();
     private List<TypeEquipment> types = new List<TypeEquipment>();
+
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Главная", href: "/"),
+        new BreadcrumbItem("Оборудование", href: null, disabled: true)
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -140,6 +97,13 @@
             return true;
         }
         return false;
+    }
+
+    private DateTime DeleteZeroNumbersToReturnDate(DateTime? time)
+    {
+        string[] words = time.ToString().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        DateTime myDate = DateTime.ParseExact(words[0], "dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture);
+        return myDate;
     }
 
     private List<Equipment> GetAll()
@@ -166,6 +130,20 @@
 
         equipment = new Equipment();
         GetAll();
+    }
+
+    async Task OpenUpdateDialog(Equipment equipment)
+    {
+        var parameters = new DialogParameters { ["equipment"] = equipment, ["types"] = types, ["people"] = people };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+        var dialog = await DialogService.ShowAsync<UpdateDialog>("Update Data", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            GetAll();
+        }
     }
 
     private void Update(Equipment equip)

@@ -2,55 +2,55 @@
 
 @using System
 @using System.Linq
+@using EquipmentApplication.Shared
+@using static MudBlazor.CategoryTypes;
 
 @inject MudBlazor.ISnackbar snackbar
+@inject IDialogService DialogService
 @inject IJSRuntime JsRuntime
 
-<h3>Type</h3>
-
-<MudCard Elevation="25">
-    <MudCardHeader>
-        <CardHeaderContent>
-            <MudText Typo="Typo.h6">Добавить/обновить тип оборудования</MudText>
-        </CardHeaderContent>
-    </MudCardHeader>
-    <MudCardContent>
-        <EditForm OnValidSubmit="Add" Model="@type">
-            <MudTextField @bind-Value="type.TypeName" Label="Наименование типа">
-            </MudTextField>
-            <br />
-            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Add">Добавить/Обновить</MudButton>
-        </EditForm>
-    </MudCardContent>
-</MudCard>
-
-<br />
+<MudBreadcrumbs Items="_items"></MudBreadcrumbs>
 
 <MudTable Items="GetAll()" Filter="new Func<TypeEquipment,bool>(Search)" @bind-type="type">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Список типов оборудования</MudText>
         <MudSpacer />
-        <MudTextField @bind-Value="searchString" Placeholder="Искать..."></MudTextField>
+        <MudTextField @bind-Value="searchString" Placeholder="Искать..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
     <HeaderContent>
         <MudTh><MudTableSortLabel SortBy="new Func<TypeEquipment, object>(x=>x.Id)">Id</MudTableSortLabel></MudTh>
-        <MudTh>Тип оборудования</MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<TypeEquipment, object>(x=>x.TypeName)">Тип оборудования</MudTableSortLabel></MudTh>
         <MudTh>Действия</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Type Name">@context.Id</MudTd>
         <MudTd DataLabel="Type Name">@context.TypeName</MudTd>
         <MudTd DataLabel="Actions">
-            <MudFab OnClick="@(() => Update(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
+            <MudFab OnClick="@(() => OpenUpdateDialog(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
             <MudFab OnClick="@(() => Delete(context))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small"></MudFab>
         </MudTd>
     </RowTemplate>
 </MudTable>
 
+<MudButton Href="addType"
+               Variant="Variant.Filled"
+               EndIcon="@Icons.Material.Filled.Add"
+               Color="Color.Primary" 
+               Class="pa-3 mt-4">
+        Добавить
+</MudButton>
+
+
 @code {
     private string searchString = "";
     private TypeEquipment type = new TypeEquipment();
     private List<TypeEquipment> typeequipments = new List<TypeEquipment>();
+
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Главная", href: "/"),
+        new BreadcrumbItem("Типы оборудования", href: null, disabled: true)
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -75,24 +75,21 @@
         return typeequipments;
     }
 
-    private void Add()
+    async Task OpenUpdateDialog(TypeEquipment type)
     {
-        if (type.Id == 0)
-        {
-            typeEquipmentService.Add(type);
-            snackbar.Add("Добавлен новый тип оборудования.",
-            Severity.Success);
-        }
-        else
-        {
-            typeEquipmentService.Update(type);
-            snackbar.Add("Тип оборудования изменен.",
-            Severity.Success);
-        }
+        var parameters = new DialogParameters { ["type"] = type };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
 
-        type = new TypeEquipment();
-        GetAll();
+        var dialog = await DialogService.ShowAsync<UpdateDataTypeDialog>("Update Data Type", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            GetAll();
+        }
     }
+
+
 
     private void Update(TypeEquipment Typeequip)
     {

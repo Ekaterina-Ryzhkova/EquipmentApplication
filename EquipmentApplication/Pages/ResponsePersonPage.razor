@@ -2,42 +2,26 @@
 
 @using System
 @using System.Linq
+@using EquipmentApplication.Shared
+@using static MudBlazor.CategoryTypes;
 
 @inject MudBlazor.ISnackbar snackbar
+@inject IDialogService DialogService
 @inject IJSRuntime JsRuntime
 
-<h3>Persons</h3>
 
-<MudCard Elevation="25">
-    <MudCardHeader>
-        <CardHeaderContent>
-            <MudText Typo="Typo.h6">Add person</MudText>
-        </CardHeaderContent>
-    </MudCardHeader>
-    <MudCardContent>
-        <EditForm OnValidSubmit="Add" Model="@person">
-            <MudTextField @bind-Value="person.FullName" Label="Введите ФИО">
-            </MudTextField>
-            <MudTextField @bind-Value="person.Position" Label="Введите должность">
-            </MudTextField>
-            <br />
-            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Add">Add</MudButton>
-        </EditForm>
-    </MudCardContent>
-</MudCard>
-
-<br />
+<MudBreadcrumbs Items="_items"></MudBreadcrumbs>
 
 <MudTable Items="GetAll()" Filter="new Func<ResponsePerson,bool>(Search)" @bind-type="person">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Список ответственных лиц</MudText>
         <MudSpacer />
-        <MudTextField @bind-Value="searchString" Placeholder="Search For..."></MudTextField>
+        <MudTextField @bind-Value="searchString" Placeholder="Искать..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
     <HeaderContent>
         <MudTh><MudTableSortLabel SortBy="new Func<ResponsePerson, object>(x=>x.Id)">Id</MudTableSortLabel></MudTh>
-        <MudTh>Наименование ответственного лица</MudTh>
-        <MudTh>Должность</MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<ResponsePerson, object>(x=>x.FullName)">Ответственное лицо</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<ResponsePerson, object>(x=>x.Position)">Должность</MudTableSortLabel></MudTh>
         <MudTh>Действия</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -45,16 +29,31 @@
         <MudTd DataLabel="Type Name">@context.FullName</MudTd>
         <MudTd DataLabel="Type Name">@context.Position</MudTd>
         <MudTd DataLabel="Actions">
-            <MudFab OnClick="@(() => Update(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
+            <MudFab OnClick="@(() => OpenUpdateDialog(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
             <MudFab OnClick="@(() => Delete(context))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small"></MudFab>
         </MudTd>
     </RowTemplate>
 </MudTable>
 
+<MudButton Href="addPerson"
+               Variant="Variant.Filled"
+               EndIcon="@Icons.Material.Filled.Add"
+               Color="Color.Primary"
+               Class="pa-3 mt-4">
+        Добавить
+</MudButton>
+
 @code {
     private string searchString = "";
     private ResponsePerson person = new ResponsePerson();
     private List<ResponsePerson> people = new List<ResponsePerson>();
+
+    
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Главная", href: "/"),
+        new BreadcrumbItem("Ответственные лица", href: null, disabled: true)
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -76,6 +75,20 @@
         people = responsePersonService.GetAll();
 
         return people;
+    }
+
+    async Task OpenUpdateDialog(ResponsePerson person)
+    {
+        var parameters = new DialogParameters { ["person"] = person };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+        var dialog = await DialogService.ShowAsync<UpdatePersonDialog>("Update Data Person", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            GetAll();
+        }
     }
 
     private void Add()

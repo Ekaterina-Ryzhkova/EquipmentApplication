@@ -1,0 +1,53 @@
+﻿@page "/addType"
+
+@using System
+@using System.Linq
+@using EquipmentApplication.Shared
+@using static MudBlazor.CategoryTypes;
+
+@inject NavigationManager NavigationManager
+@inject MudBlazor.ISnackbar snackbar
+@inject IJSRuntime JsRuntime
+
+<MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+
+<MudCard Elevation="25" Style="max-width: 960px;">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Добавить</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <EditForm OnValidSubmit="Add" Model="@type">
+            <MudTextField @bind-Value="type.TypeName" Label="Наименование">
+            </MudTextField>
+            <br />
+            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Add">Добавить</MudButton>
+        </EditForm>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public TypeEquipment type { get; set; } = new TypeEquipment();
+
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Главная", href: "/"),
+        new BreadcrumbItem("Типы оборудования", href: "type"),
+        new BreadcrumbItem("Добавить", href: null, disabled: true)
+    };
+
+    private void Add()
+    {
+        if (type.Id == 0)
+        {
+            typeEquipmentService.Add(type);
+            snackbar.Add("Добавлен тип",
+            Severity.Success);
+        }
+
+        type = new TypeEquipment();
+        typeEquipmentService.GetAll();
+        NavigationManager.NavigateTo("type");
+    }
+}

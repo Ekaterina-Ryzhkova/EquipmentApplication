@@ -1,0 +1,34 @@
+﻿@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Обновить данные
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="type.TypeName" Label="Наименование"></MudTextField>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Отменить</MudButton>
+        <MudButton Color="Color.Primary" OnClick="UpdateData">Обновить</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public TypeEquipment type { get; set; } = new TypeEquipment();
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void UpdateData()
+    {
+        typeEquipmentService.Update(type);
+        Snackbar.Add("Данные обновлены", Severity.Success);
+        MudDialog.Close(DialogResult.Ok(type.Id));
+    }
+}

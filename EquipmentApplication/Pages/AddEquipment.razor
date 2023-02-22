@@ -1,0 +1,98 @@
+﻿@page "/addEquipment"
+
+@using System
+@using System.Linq
+@using EquipmentApplication.Shared
+@using static MudBlazor.CategoryTypes;
+
+@inject NavigationManager NavigationManager
+@inject MudBlazor.ISnackbar snackbar
+
+<MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+
+<MudCard Elevation="25">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Добавить оборудование</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <EditForm OnValidSubmit="Add" Model="@equipment">     
+            <MudGrid Style="flex-direction: column;">
+
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="equipment.InventoryId" Label="Инвентарный номер" Variant="Variant.Text"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="equipment.FullName" Label="Наименование оборудования" Variant="Variant.Text"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudSelect T="int" Label="Выбрать тип" @bind-Value="equipment.TypeId">
+                        @foreach(var item in types)
+                        {
+                            <MudSelectItem T="int" Value="@item.Id">@item.TypeName</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="equipment.Model" Label="Модель" Variant="Variant.Text"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudDatePicker @bind-Date="equipment.DeliveryDate" DateFormat="dd.MM.yyyy" Label="Дата"></MudDatePicker>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="equipment.StorageLocation" Label="Место хранения" Variant="Variant.Text"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="equipment.DestinationLocation" Label="Место назначения" Variant="Variant.Text"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudSelect T="int" Label="Ответственное  лицо" @bind-Value="equipment.PersonId">
+                        @foreach (var item in people)
+                        {
+                            <MudSelectItem T="int" Value="@item.Id">@item.FullName</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="equipment.Comment" Label="Комментарий" Variant="Variant.Text"></MudTextField>
+                </MudItem>
+            </MudGrid>
+            <br />
+            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Add">Добавить</MudButton>
+        </EditForm>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public Equipment equipment { get; set; } = new Equipment();
+    [Parameter] public List<TypeEquipment> types { get; set; } = new List<TypeEquipment>();
+    [Parameter] public List<ResponsePerson> people { get; set; } = new List<ResponsePerson>();
+
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Главная", href: "/"),
+        new BreadcrumbItem("Оборудование", href: "equipment"),
+        new BreadcrumbItem("Добавить", href: null, disabled: true)
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        people = responsePersonService.GetAll();
+        types = typeEquipmentService.GetAll();
+    }
+
+    private void Add()
+    {
+        if (equipment.Id == 0)
+        {
+            equipmentService.Add(equipment);
+            snackbar.Add("Добавлено оборудование",
+            Severity.Success);
+        }
+
+        equipment = new Equipment();
+        equipmentService.GetAll();
+        NavigationManager.NavigateTo("equipment");
+    }
+}

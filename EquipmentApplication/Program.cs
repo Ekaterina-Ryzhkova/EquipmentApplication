@@ -32,6 +32,7 @@ builder.Services.AddScoped<ResponsePersonService>();
 
 //OtherServices
 builder.Services.AddMudServices();
+builder.Services.AddMudBlazorDialog();
 
 var app = builder.Build();
 

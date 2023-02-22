@@ -1,0 +1,35 @@
+﻿@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Обновить данные
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="person.FullName" Label="Ответственное лицо"></MudTextField>
+        <MudTextField @bind-Value="person.Position" Label="Должность"></MudTextField>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Отменить</MudButton>
+        <MudButton Color="Color.Primary" OnClick="UpdateData">Обновить</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public ResponsePerson person { get; set; } = new ResponsePerson();
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void UpdateData()
+    {
+        responsePersonService.Update(person);
+        Snackbar.Add("Данные обновлены.", Severity.Success);
+        MudDialog.Close(DialogResult.Ok(person.Id));
+    }
+}

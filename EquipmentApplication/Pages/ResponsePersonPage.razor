@@ -18,6 +18,12 @@
         <MudSpacer />
         <MudTextField @bind-Value="searchString" Placeholder="Искать..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
+    <ColGroup>
+        <col style="width:180px;" />
+        <col />
+        <col />
+        <col style="width:125px;" />
+    </ColGroup>
     <HeaderContent>
         <MudTh><MudTableSortLabel SortBy="new Func<ResponsePerson, object>(x=>x.Id)">Id</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<ResponsePerson, object>(x=>x.FullName)">Ответственное лицо</MudTableSortLabel></MudTh>
@@ -29,8 +35,8 @@
         <MudTd DataLabel="Type Name">@context.FullName</MudTd>
         <MudTd DataLabel="Type Name">@context.Position</MudTd>
         <MudTd DataLabel="Actions">
-            <MudFab OnClick="@(() => OpenUpdateDialog(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
-            <MudFab OnClick="@(() => Delete(context))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small"></MudFab>
+            <MudIconButton OnClick="@(() => OpenUpdateDialog(context))" Icon="@Icons.Material.Outlined.Edit" Size="@Size.Small"></MudIconButton>
+            <MudIconButton OnClick="@(() => Delete(context))" Icon="@Icons.Material.Outlined.Delete" Size="Size.Small"></MudIconButton>
         </MudTd>
     </RowTemplate>
 </MudTable>

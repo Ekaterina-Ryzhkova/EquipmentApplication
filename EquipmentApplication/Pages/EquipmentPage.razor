@@ -11,44 +11,62 @@
 
 <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
 
-<MudTable RowsPerPage="5" @ref="@_table" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info" Style="color: white" Elevation="25" Items="GetAll()" Filter="new Func<Equipment,bool>(Search)" @bind-equipment="equipment">
+<MudDataGrid T="Equipment" MultiSelection="true" Items="@equipments" SortMode="SortMode.Single" Filterable="true">
     <ToolBarContent>
-        <MudText Typo="Typo.h6" Color="Color.Dark">Список оборудования</MudText>
+        <MudText Typo="Typo.h6">Список оборудования</MudText>
         <MudSpacer />
         <MudTextField @bind-Value="searchString" Placeholder="Искать..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
-    <HeaderContent>
-        <MudTh><MudTableSortLabel SortBy="new Func<Equipment, object>(x=>x.Id)">Id</MudTableSortLabel></MudTh>
-        <MudTh>ИНВ.№</MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<Equipment, object>(x=>x.FullName)">Наименование</MudTableSortLabel></MudTh>
-        <MudTh>Тип</MudTh>
-        <MudTh>Модель</MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<Equipment, object>(x=>x.DeliveryDate)">Дата</MudTableSortLabel></MudTh>
-        <MudTh>Место хранения</MudTh>
-        <MudTh>Место назначения</MudTh>
-        <MudTh>Ответственное лицо</MudTh>
-        <MudTh>Комментарий</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Type Name">@context.Id</MudTd>
-        <MudTd DataLabel="Type Name">@context.InventoryId</MudTd>
-        <MudTd DataLabel="Type Name">@context.FullName</MudTd>
-        <MudTd DataLabel="Type Name">@context.TypeEquipment.TypeName</MudTd>
-        <MudTd DataLabel="Type Name">@context.Model</MudTd>
-        <MudTd DataLabel="Type Name">@DeleteZeroNumbersToReturnDate(@context.DeliveryDate).ToString("dd.MM.yyyy")</MudTd>
-        <MudTd DataLabel="Type Name">@context.StorageLocation</MudTd>
-        <MudTd DataLabel="Type Name">@context.DestinationLocation</MudTd>
-        <MudTd DataLabel="Type Name">@context.ResponsePerson.FullName</MudTd>
-        <MudTd DataLabel="Type Name">@context.Comment</MudTd>
-        <MudTd DataLabel="Actions">
-            <MudFab OnClick="@(() => OpenUpdateDialog(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
-            <MudFab OnClick="@(() => Delete(context))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small"></MudFab>
-        </MudTd>
-    </RowTemplate>
+    <Columns>
+        <HierarchyColumn T="Equipment" />
+        <Column T="Equipment" Field="Id" Title="Id" Filterable="false" />
+        <Column T="Equipment" Field="InventoryId" Title="Инвентарный номер" Sortable="false" Filterable="false" />
+        <Column T="Equipment" Field="TypeId" Title="Тип">
+            <CellTemplate>
+                @context.Item.TypeEquipment.TypeName
+            </CellTemplate>
+        </Column>
+        <Column T="Equipment" Field="DeliveryDate" Title="Дата">
+            <CellTemplate>
+                @DeleteZeroNumbersToReturnDate(@context.Item.DeliveryDate).ToString("d")
+            </CellTemplate>
+        </Column>
+        <Column T="Equipment" Field="PersonId" Title="Ответственное лицо">
+            <CellTemplate>
+                @context.Item.ResponsePerson.FullName
+            </CellTemplate>
+        </Column>
+        <Column T="Equipment" Title="Действия" StickyRight="true" Sortable="false" Filterable="false">
+            <CellTemplate>
+                <MudIconButton OnClick="@(() => OpenUpdateDialog(@context.Item))" Icon="@Icons.Material.Outlined.Edit" Size="@Size.Small" />
+                <MudIconButton OnClick="@(() => Delete(@context.Item))" Icon="@Icons.Material.Outlined.Delete" Size="@Size.Small" />
+            </CellTemplate>
+        </Column>
+    </Columns>
+    <ChildRowContent>
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudAvatar Color="Color.Secondary">I</MudAvatar>
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">@context.Item.FullName</MudText>
+                    <MudText Typo="Typo.body1">Модель: @context.Item.Model</MudText>
+                    <MudText Typo="Typo.body2">№@context.Item.InventoryId</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText Typo="Typo.body1">Дата: <b>@DeleteZeroNumbersToReturnDate(@context.Item.DeliveryDate).ToString("d")</b></MudText>
+                <MudText Typo="Typo.body1">Место хранения: <b>@context.Item.StorageLocation</b></MudText>
+                <MudText Typo="Typo.body1">Место назначения: <b>@context.Item.DestinationLocation</b></MudText>
+                <MudTextField @bind-Value="@context.Item.Comment" Variant="Variant.Outlined" Label="Комментарий" Disabled="true" />
+            </MudCardContent>
+        </MudCard>
+    </ChildRowContent>
     <PagerContent>
-        <MudPagination ShowFirstButton="true" ShowLastButton="true" SelectedChanged="PageChanged" Count="@((_table.GetFilteredItemsCount() + _table.RowsPerPage - 1) / _table.RowsPerPage)" Class="pa-4" />
+        <MudDataGridPager T="Equipment" />
     </PagerContent>
-</MudTable>
+</MudDataGrid>
 
 <MudButton Href="addEquipment"
                Variant="Variant.Filled"
@@ -113,24 +131,24 @@
         return equipments;
     }
 
-    private void Add()
-    {
-        if (equipment.Id == 0)
-        {
-            equipmentService.Add(equipment);
-            snackbar.Add("Добавлено новое оборудование.",
-            Severity.Success);
-        }
-        else
-        {
-            equipmentService.Update(equipment);
-            snackbar.Add("Данные об оборудовании изменены.",
-            Severity.Success);
-        }
+    //private void Add()
+    //{
+    //    if (equipment.Id == 0)
+    //    {
+    //        equipmentService.Add(equipment);
+    //        snackbar.Add("Добавлено новое оборудование.",
+    //        Severity.Success);
+    //    }
+    //    else
+    //    {
+    //        equipmentService.Update(equipment);
+    //        snackbar.Add("Данные об оборудовании изменены.",
+    //        Severity.Success);
+    //    }
 
-        equipment = new Equipment();
-        GetAll();
-    }
+    //    equipment = new Equipment();
+    //    GetAll();
+    //}
 
     async Task OpenUpdateDialog(Equipment equipment)
     {
@@ -146,11 +164,11 @@
         }
     }
 
-    private void Update(Equipment equip)
-    {
-        equipment = equip;
-        StateHasChanged();
-    }
+    //private void Update(Equipment equip)
+    //{
+    //    equipment = equip;
+    //    StateHasChanged();
+    //}
 
     private void Delete(Equipment equipment)
     {

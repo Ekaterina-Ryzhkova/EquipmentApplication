@@ -3,6 +3,7 @@
 @using System
 @using System.Linq
 @using EquipmentApplication.Shared
+@using FluentValidation
 @using static MudBlazor.CategoryTypes;
 
 @inject NavigationManager NavigationManager
@@ -14,21 +15,26 @@
 <MudCard Elevation="25" Style="max-width: 960px;">
     <MudCardHeader>
         <CardHeaderContent>
-            <MudText Typo="Typo.h6">Добавить</MudText>
+            <MudText Typo="Typo.h6">Добавить тип оборудования</MudText>
         </CardHeaderContent>
     </MudCardHeader>
-    <MudCardContent>
-        <EditForm OnValidSubmit="Add" Model="@type">
-            <MudTextField @bind-Value="type.TypeName" Label="Наименование">
-            </MudTextField>
-            <br />
-            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Add">Добавить</MudButton>
-        </EditForm>
-    </MudCardContent>
+    <MudForm Model="@type" @ref="@form" Validation="@(formValidator.ValidateValue)" ValidationDelay="0">
+        <MudCardContent>
+            <MudTextField @bind-Value="type.TypeName"
+                          For="@(() => type.TypeName)"
+                          Label="Наименование" />
+        </MudCardContent>
+    </MudForm>
+    <MudCardActions>
+        <MudButton Color="Color.Primary" Size="Size.Large" Variant="Variant.Filled" OnClick="@(async () => await Submit())">Добавить</MudButton>
+    </MudCardActions>
 </MudCard>
 
 @code {
     [Parameter] public TypeEquipment type { get; set; } = new TypeEquipment();
+
+    FormFluentValidator formValidator = new FormFluentValidator();
+    MudForm form;
 
     private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
     {
@@ -37,17 +43,39 @@
         new BreadcrumbItem("Добавить", href: null, disabled: true)
     };
 
-    private void Add()
+    public class FormFluentValidator : AbstractValidator<TypeEquipment>
     {
-        if (type.Id == 0)
+        public FormFluentValidator()
         {
-            typeEquipmentService.Add(type);
-            snackbar.Add("Добавлен тип",
-            Severity.Success);
+            RuleFor(x => x.TypeName)
+                .NotEmpty().WithMessage("Поле должно быть заполнено")
+                .Length(2, 100).WithMessage("Поле должно быть длиной от {MinLength} до {MaxLength} символов. Введено {TotalLength} символов.");
         }
 
-        type = new TypeEquipment();
-        typeEquipmentService.GetAll();
-        NavigationManager.NavigateTo("type");
+        public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (type, propertyName) =>
+        {
+            var result = await ValidateAsync(ValidationContext<TypeEquipment>.CreateWithOptions((TypeEquipment)type, x => x.IncludeProperties(propertyName)));
+            if (result.IsValid)
+                return Array.Empty<string>();
+            return result.Errors.Select(e => e.ErrorMessage);
+        };
+    }
+
+    private async Task Submit()
+    {
+        await form.Validate();
+
+        if (form.IsValid)
+        {
+            if (type.Id == 0)
+            {
+                typeEquipmentService.Add(type);
+                snackbar.Add("Добавлен новый тип оборудования!", MudBlazor.Severity.Success);
+            }
+   
+            type = new TypeEquipment();
+            typeEquipmentService.GetAll();
+            NavigationManager.NavigateTo("type");
+        }
     }
 }

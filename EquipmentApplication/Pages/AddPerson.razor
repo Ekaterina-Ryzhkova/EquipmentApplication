@@ -3,6 +3,7 @@
 @using System
 @using System.Linq
 @using EquipmentApplication.Shared
+@using FluentValidation
 @using static MudBlazor.CategoryTypes;
 
 @inject NavigationManager NavigationManager
@@ -17,18 +18,26 @@
             <MudText Typo="Typo.h6">Добавить ответственное лицо</MudText>
         </CardHeaderContent>
     </MudCardHeader>
-    <MudCardContent>
-        <EditForm OnValidSubmit="Add" Model="@person">
-            <MudTextField @bind-Value="person.FullName" Label="Ответственное лицо"></MudTextField>
-            <MudTextField @bind-Value="person.Position" Label="Должность"></MudTextField>
-            <br />
-            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Add">Добавить</MudButton>
-        </EditForm>
-    </MudCardContent>
+    <MudForm Model="@person" @ref="@form" Validation="@(formValidator.ValidateValue)" ValidationDelay="0">
+        <MudCardContent>
+            <MudTextField @bind-Value="person.FullName"
+                          For="@(() => person.FullName)"
+                          Label="ФИО" />
+            <MudTextField @bind-Value="person.Position"
+                          For="@(() => person.Position)"
+                          Label="Должность" />
+        </MudCardContent>
+    </MudForm>
+    <MudCardActions>
+        <MudButton Color="Color.Primary" Size="Size.Large" Variant="Variant.Filled" OnClick="@(async () => await Submit())">Добавить</MudButton>
+    </MudCardActions>
 </MudCard>
 
 @code {
     [Parameter] public ResponsePerson person { get; set; } = new ResponsePerson();
+
+    FormFluentValidator formValidator = new FormFluentValidator();
+    MudForm form;
 
     private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
     {
@@ -37,17 +46,43 @@
         new BreadcrumbItem("Добавить", href: null, disabled: true)
     };
 
-    private void Add()
+    public class FormFluentValidator : AbstractValidator<ResponsePerson>
     {
-        if (person.Id == 0)
+        public FormFluentValidator()
         {
-            responsePersonService.Add(person);
-            snackbar.Add("Добавлено ответственное лицо",
-            Severity.Success);
+            RuleFor(x => x.FullName)
+                .NotEmpty().WithMessage("Поле должно быть заполнено")
+                .Length(10, 100).WithMessage("Поле должно быть длиной от {MinLength} до {MaxLength} символов. Введено {TotalLength} символов.");
+
+            RuleFor(x => x.Position)
+                .NotEmpty().WithMessage("Поле должно быть заполнено")
+                .Length(5, 100).WithMessage("Поле должно быть длиной от {MinLength} до {MaxLength} символов. Введено {TotalLength} символов.");
         }
 
-        person = new ResponsePerson();
-        responsePersonService.GetAll();
-        NavigationManager.NavigateTo("person");
+        public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (person, propertyName) =>
+        {
+            var result = await ValidateAsync(ValidationContext<ResponsePerson>.CreateWithOptions((ResponsePerson)person, x => x.IncludeProperties(propertyName)));
+            if (result.IsValid)
+                return Array.Empty<string>();
+            return result.Errors.Select(e => e.ErrorMessage);
+        };
+    }
+
+    private async Task Submit()
+    {
+        await form.Validate();
+
+        if (form.IsValid)
+        {
+            if (person.Id == 0)
+            {
+                responsePersonService.Add(person);
+                snackbar.Add("Добавлено новое ответственное лицо!", MudBlazor.Severity.Success);
+            }
+
+            person = new ResponsePerson();
+            responsePersonService.GetAll();
+            NavigationManager.NavigateTo("person");
+        }
     }
 }

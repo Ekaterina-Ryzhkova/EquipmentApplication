@@ -3,6 +3,7 @@
 @using System
 @using System.Linq
 @using EquipmentApplication.Shared
+@using FluentValidation
 @using static MudBlazor.CategoryTypes;
 
 @inject NavigationManager NavigationManager
@@ -10,7 +11,7 @@
 
 <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
 
-<MudCard Elevation="25">
+@*<MudCard Elevation="25" Style="max-width: 960px;">
     <MudCardHeader>
         <CardHeaderContent>
             <MudText Typo="Typo.h6">Добавить оборудование</MudText>
@@ -19,14 +20,13 @@
     <MudCardContent>
         <EditForm OnValidSubmit="Add" Model="@equipment">     
             <MudGrid Style="flex-direction: column;">
-
-                <MudItem xs="12" sm="4" md="6">
+                <MudItem xs="12" sm="20" md="20">
                     <MudTextField @bind-Value="equipment.InventoryId" Label="Инвентарный номер" Variant="Variant.Text"></MudTextField>
                 </MudItem>
-                <MudItem xs="12" sm="4" md="6">
+                <MudItem xs="12" sm="20" md="20">
                     <MudTextField @bind-Value="equipment.FullName" Label="Наименование оборудования" Variant="Variant.Text"></MudTextField>
                 </MudItem>
-                <MudItem xs="12" sm="4" md="6">
+                <MudItem xs="12" sm="20" md="20">
                     <MudSelect T="int" Label="Выбрать тип" @bind-Value="equipment.TypeId">
                         @foreach(var item in types)
                         {
@@ -34,19 +34,19 @@
                         }
                     </MudSelect>
                 </MudItem>
-                <MudItem xs="12" sm="4" md="6">
+                <MudItem xs="12" sm="20" md="20">
                     <MudTextField @bind-Value="equipment.Model" Label="Модель" Variant="Variant.Text"></MudTextField>
                 </MudItem>
-                <MudItem xs="12" sm="4" md="6">
+                <MudItem xs="12" sm="20" md="20">
                     <MudDatePicker @bind-Date="equipment.DeliveryDate" DateFormat="dd.MM.yyyy" Label="Дата"></MudDatePicker>
                 </MudItem>
-                <MudItem xs="12" sm="4" md="6">
+                <MudItem xs="12" sm="20" md="20">
                     <MudTextField @bind-Value="equipment.StorageLocation" Label="Место хранения" Variant="Variant.Text"></MudTextField>
                 </MudItem>
-                <MudItem xs="12" sm="4" md="6">
+                <MudItem xs="12" sm="20" md="20">
                     <MudTextField @bind-Value="equipment.DestinationLocation" Label="Место назначения" Variant="Variant.Text"></MudTextField>
                 </MudItem>
-                <MudItem xs="12" sm="4" md="6">
+                <MudItem xs="12" sm="20" md="20">
                     <MudSelect T="int" Label="Ответственное  лицо" @bind-Value="equipment.PersonId">
                         @foreach (var item in people)
                         {
@@ -54,20 +54,64 @@
                         }
                     </MudSelect>
                 </MudItem>
-                <MudItem xs="12" sm="4" md="6">
+                <MudItem xs="12" sm="20" md="20">
                     <MudTextField @bind-Value="equipment.Comment" Label="Комментарий" Variant="Variant.Text"></MudTextField>
                 </MudItem>
             </MudGrid>
             <br />
-            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Add">Добавить</MudButton>
+            <MudButton Color="Color.Primary" Size="Size.Large" Variant="Variant.Filled" OnClick="Add">Добавить</MudButton>
         </EditForm>
     </MudCardContent>
+</MudCard>*@
+
+<MudCard Elevation="25" Style="max-width: 960px;">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Добавить оборудование</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudForm Model="@equipment" @ref="@form" Validation="@(formValidator.ValidateValue)" ValidationDelay="0">
+        <MudCardContent>
+            <MudTextField @bind-Value="equipment.InventoryId" For="@(() => equipment.InventoryId)" Label="Инвентарный номер" Variant="Variant.Text" />
+            <MudTextField @bind-Value="equipment.FullName" For="@(() => equipment.FullName)" Label="Наименование" Variant="Variant.Text" />
+            <MudItem xs="12" sm="20" md="20">
+                <MudSelect T="int" Label="Выбрать тип" @bind-Value="equipment.TypeId">
+                    @foreach (var item in types)
+                    {
+                        <MudSelectItem T="int" Value="@item.Id">@item.TypeName</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudTextField @bind-Value="equipment.Model" For="@(() => equipment.Model)" Label="Модель" Variant="Variant.Text" />
+            <MudDatePicker @bind-Date="equipment.DeliveryDate" DateFormat="dd.MM.yyyy" For="@(() => equipment.DeliveryDate)" Label="Дата"></MudDatePicker>
+            <MudTextField @bind-Value="equipment.StorageLocation" For="@(() => equipment.StorageLocation)" Label="Место хранения" Variant="Variant.Text"></MudTextField>
+            <MudTextField @bind-Value="equipment.DestinationLocation" For="@(() => equipment.DestinationLocation)" Label="Место назначения" Variant="Variant.Text"></MudTextField>
+            <MudItem xs="12" sm="20" md="20">
+                <MudSelect T="int" Label="Ответственное  лицо" @bind-Value="equipment.PersonId">
+                    @foreach (var item in people)
+                    {
+                        <MudSelectItem T="int" Value="@item.Id">@item.FullName</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudTextField @bind-Value="equipment.Comment" For="@(() => equipment.Comment)" Label="Комментарий" Variant="Variant.Text"></MudTextField>
+        </MudCardContent>
+    </MudForm>
+    <MudCardActions>
+        <MudButton Color="Color.Primary" Size="Size.Large" Variant="Variant.Filled" OnClick="@(async () => await Submit())">Добавить</MudButton>
+    </MudCardActions>
 </MudCard>
 
 @code {
-    [Parameter] public Equipment equipment { get; set; } = new Equipment();
+    [Parameter] public Equipment equipment { get; set; } = new Equipment()
+    {
+        DeliveryDate = DateTime.Today
+    };
     [Parameter] public List<TypeEquipment> types { get; set; } = new List<TypeEquipment>();
     [Parameter] public List<ResponsePerson> people { get; set; } = new List<ResponsePerson>();
+
+    FormFluentValidator formValidator = new FormFluentValidator();
+    MudForm form;
 
     private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
     {
@@ -82,17 +126,68 @@
         types = typeEquipmentService.GetAll();
     }
 
-    private void Add()
+    public class FormFluentValidator : AbstractValidator<Equipment>
     {
-        if (equipment.Id == 0)
+        public FormFluentValidator()
         {
-            equipmentService.Add(equipment);
-            snackbar.Add("Добавлено оборудование",
-            Severity.Success);
+            RuleFor(x => x.InventoryId)
+                .NotEmpty().WithMessage("Поле должно быть заполнено")
+                .Length(7).WithMessage("Поле должно быть длиной {MinLength} символов.");
+
+            RuleFor(x => x.FullName)
+                .NotEmpty().WithMessage("Поле должно быть заполнено")
+                .Length(10, 100).WithMessage("Поле должно быть длиной от {MinLength} до {MaxLength} символов. Введено {TotalLength} символов.");
+
+            RuleFor(x => x.TypeId)
+                .NotEmpty().WithMessage("Поле должно быть заполнено");
+
+            RuleFor(x => x.Model)
+                .NotEmpty().WithMessage("Поле должно быть заполнено")
+                .Length(2, 100).WithMessage("Поле должно быть длиной от {MinLength} до {MaxLength} символов. Введено {TotalLength} символов.");
+
+            RuleFor(x => x.DeliveryDate)
+                .NotEmpty().WithMessage("Поле должно быть заполнено");
+
+            RuleFor(x => x.StorageLocation)
+                .NotEmpty().WithMessage("Поле должно быть заполнено")
+                .Length(10, 100).WithMessage("Поле должно быть длиной от {MinLength} до {MaxLength} символов. Введено {TotalLength} символов.");
+
+            RuleFor(x => x.DestinationLocation)
+                .NotEmpty().WithMessage("Поле должно быть заполнено")
+                .Length(10, 100).WithMessage("Поле должно быть длиной от {MinLength} до {MaxLength} символов. Введено {TotalLength} символов.");
+
+            RuleFor(x => x.PersonId)
+                .NotEmpty().WithMessage("Поле должно быть заполнено");
+
+            RuleFor(x => x.Comment)
+                .NotEmpty().WithMessage("Поле должно быть заполнено")
+                .Length(1, 100).WithMessage("Поле должно быть длиной от {MinLength} до {MaxLength} символов. Введено {TotalLength} символов.");
         }
 
-        equipment = new Equipment();
-        equipmentService.GetAll();
-        NavigationManager.NavigateTo("equipment");
+        public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (equip, propertyName) =>
+        {
+            var result = await ValidateAsync(ValidationContext<Equipment>.CreateWithOptions((Equipment)equip, x => x.IncludeProperties(propertyName)));
+            if (result.IsValid)
+                return Array.Empty<string>();
+            return result.Errors.Select(e => e.ErrorMessage);
+        };
+    }
+
+    private async Task Submit()
+    {
+        await form.Validate();
+
+        if (form.IsValid)
+        {
+            if (equipment.Id == 0)
+            {
+                equipmentService.Add(equipment);
+                snackbar.Add("Добавлено новое оборудование!", MudBlazor.Severity.Success);
+            }
+
+            equipment = new Equipment();
+            equipmentService.GetAll();
+            NavigationManager.NavigateTo("equipment");
+        }
     }
 }

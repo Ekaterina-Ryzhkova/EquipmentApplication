@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Areas\Identity\Pages\Account\Register.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Blazored.Modal" Version="6.0.0" />
     <PackageReference Include="FluentValidation" Version="11.5.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.12" />
@@ -20,7 +24,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\AddPages\" />
+    <UpToDateCheckInput Remove="Areas\Identity\Pages\Account\Register.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Areas\Identity\Pages\Account\Register.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Areas\Identity\Pages\Account\Register.razor" />
   </ItemGroup>
 
 </Project>

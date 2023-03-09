@@ -3,10 +3,12 @@
 @using System
 @using System.Linq
 @using EquipmentApplication.Shared
+@using System.Security.Claims
 @using static MudBlazor.CategoryTypes;
 
 @inject MudBlazor.ISnackbar snackbar
 @inject IDialogService DialogService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JsRuntime
 
 
@@ -22,34 +24,51 @@
         <col style="width:180px;" />
         <col />
         <col />
-        <col style="width:125px;" />
+        @if (claims.Count() > 0)
+        {
+            <col style="width:125px;" />
+        }
     </ColGroup>
     <HeaderContent>
         <MudTh><MudTableSortLabel SortBy="new Func<ResponsePerson, object>(x=>x.Id)">Id</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<ResponsePerson, object>(x=>x.FullName)">Ответственное лицо</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<ResponsePerson, object>(x=>x.Position)">Должность</MudTableSortLabel></MudTh>
-        <MudTh>Действия</MudTh>
+        @if (claims.Count() > 0)
+        {
+            <MudTh>Действия</MudTh>
+        }
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Type Name">@context.Id</MudTd>
         <MudTd DataLabel="Type Name">@context.FullName</MudTd>
         <MudTd DataLabel="Type Name">@context.Position</MudTd>
-        <MudTd DataLabel="Actions">
-            <MudIconButton OnClick="@(() => OpenUpdateDialog(context))" Icon="@Icons.Material.Outlined.Edit" Size="@Size.Small"></MudIconButton>
-            <MudIconButton OnClick="@(() => Delete(context))" Icon="@Icons.Material.Outlined.Delete" Size="Size.Small"></MudIconButton>
-        </MudTd>
+        @if (claims.Count() > 0)
+        {
+            <MudTd DataLabel="Actions">
+                <MudIconButton OnClick="@(() => OpenUpdateDialog(context))" Icon="@Icons.Material.Outlined.Edit" Size="@Size.Small"></MudIconButton>
+                <MudIconButton OnClick="@(() => Delete(context))" Icon="@Icons.Material.Outlined.Delete" Size="Size.Small"></MudIconButton>
+            </MudTd>
+        }
     </RowTemplate>
 </MudTable>
 
-<MudButton Href="addPerson"
-               Variant="Variant.Filled"
-               EndIcon="@Icons.Material.Filled.Add"
-               Color="Color.Primary"
-               Class="pa-3 mt-4">
-        Добавить
-</MudButton>
+<AuthorizeView>
+    <Authorized>
+        <MudButton Href="addPerson"
+                   Variant="Variant.Filled"
+                   EndIcon="@Icons.Material.Filled.Add"
+                   Color="Color.Primary"
+                   Class="pa-3 mt-4">
+            Добавить
+        </MudButton>
+    </Authorized>
+</AuthorizeView>
+
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+    private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
     private string searchString = "";
     private ResponsePerson person = new ResponsePerson();
     private List<ResponsePerson> people = new List<ResponsePerson>();
@@ -64,6 +83,17 @@
     protected override async Task OnInitializedAsync()
     {
         people = responsePersonService.GetAll();
+
+        if (authenticationState is not null)
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                claims = user.Claims;
+            }
+        }
     }
 
     private bool Search(ResponsePerson responsePerson)

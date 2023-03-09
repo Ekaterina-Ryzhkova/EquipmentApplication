@@ -3,10 +3,12 @@
 @using System
 @using System.Linq
 @using EquipmentApplication.Shared
+@using System.Security.Claims
 @using static MudBlazor.CategoryTypes;
 
 @inject MudBlazor.ISnackbar snackbar
 @inject IDialogService DialogService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JsRuntime
 
 <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
@@ -15,7 +17,10 @@
     <ColGroup>
         <col style="width:180px;" />
         <col />
-        <col style="width:125px;" />
+        @if (claims.Count() > 0)
+        {
+            <col style="width:125px;" />
+        }
     </ColGroup>
     <ToolBarContent>
         <MudText Typo="Typo.h6">Список типов оборудования</MudText>
@@ -25,28 +30,40 @@
     <HeaderContent>
         <MudTh><MudTableSortLabel SortBy="new Func<TypeEquipment, object>(x=>x.Id)">Id</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<TypeEquipment, object>(x=>x.TypeName)">Тип оборудования</MudTableSortLabel></MudTh>
-        <MudTh>Действия</MudTh>
+        @if (claims.Count() > 0)
+        {  
+            <MudTh>Действия</MudTh>
+        }
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Type Name">@context.Id</MudTd>
         <MudTd DataLabel="Type Name">@context.TypeName</MudTd>
-        <MudTd DataLabel="Actions">
-            <MudIconButton OnClick="@(() => OpenUpdateDialog(context))" Icon="@Icons.Material.Outlined.Edit" Size="@Size.Small"></MudIconButton>
-            <MudIconButton OnClick="@(() => Delete(context))" Icon="@Icons.Material.Outlined.Delete" Size="Size.Small"></MudIconButton>
-        </MudTd>
+        @if (claims.Count() > 0)
+        {
+            <MudTd DataLabel="Actions">
+                <MudIconButton OnClick="@(() => OpenUpdateDialog(context))" Icon="@Icons.Material.Outlined.Edit" Size="@Size.Small"></MudIconButton>
+                <MudIconButton OnClick="@(() => Delete(context))" Icon="@Icons.Material.Outlined.Delete" Size="Size.Small"></MudIconButton>
+            </MudTd>
+        }
     </RowTemplate>
 </MudTable>
 
-<MudButton Href="addType"
-               Variant="Variant.Filled"
-               EndIcon="@Icons.Material.Filled.Add"
-               Color="Color.Primary" 
-               Class="pa-3 mt-4">
-        Добавить
-</MudButton>
-
+<AuthorizeView>
+    <Authorized>
+        <MudButton Href="addType"
+                   Variant="Variant.Filled"
+                   EndIcon="@Icons.Material.Filled.Add"
+                   Color="Color.Primary"
+                   Class="pa-3 mt-4">
+            Добавить
+        </MudButton>
+    </Authorized>
+</AuthorizeView>
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+    private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
     private string searchString = "";
     private TypeEquipment type = new TypeEquipment();
     private List<TypeEquipment> typeequipments = new List<TypeEquipment>();
@@ -60,6 +77,17 @@
     protected override async Task OnInitializedAsync()
     {
         typeequipments = typeEquipmentService.GetAll();
+
+        if (authenticationState is not null)
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                claims = user.Claims;
+            }
+        }
     }
 
 

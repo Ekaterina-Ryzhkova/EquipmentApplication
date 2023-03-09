@@ -1,0 +1,42 @@
+﻿@page "/graph"
+
+<MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+
+<MudChart ChartType="ChartType.Line" ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="100%" Height="350px"></MudChart>
+<MudText Typo="Typo.h6">Selected portion of the chart: @Index</MudText>
+
+@code {
+    private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
+
+    private Equipment equipment = new Equipment();
+    private ResponsePerson person = new ResponsePerson();
+    private TypeEquipment type = new TypeEquipment();
+
+    static private List<Equipment> equipments = new List<Equipment>();
+    private List<ResponsePerson> people = new List<ResponsePerson>();
+    private List<TypeEquipment> types = new List<TypeEquipment>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        people = responsePersonService.GetAll();
+        types = typeEquipmentService.GetAll();
+        equipments = equipmentService.GetAll();
+
+        var res = from s in equipments
+                  select s.DeliveryDate;
+    }
+
+    public List<ChartSeries> Series = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = "Series 1", Data = new double[] { 90, 79, 72, 69, 62, 62, 55, 65, 70 } },
+        new ChartSeries() { Name = "Series 2", Data = new double[] { 10, 41, 35, 51, 49, 62, 69, 91, 148 } },
+    };
+    
+    public string[] XAxisLabels = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep" };
+
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Главная", href: "/"),
+        new BreadcrumbItem("Графический отчет", href: null, disabled: true)
+    };
+}

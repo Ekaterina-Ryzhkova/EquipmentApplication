@@ -3,10 +3,12 @@
 @using System
 @using System.Linq
 @using EquipmentApplication.Shared
+@using System.Security.Claims
 @using static MudBlazor.CategoryTypes;
 
 @inject MudBlazor.ISnackbar snackbar
 @inject IDialogService DialogService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JsRuntime
 
 <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
@@ -36,12 +38,15 @@
                 @context.Item.ResponsePerson.FullName
             </CellTemplate>
         </Column>
-        <Column T="Equipment" Title="Действия" StickyRight="true" Sortable="false" Filterable="false">
-            <CellTemplate>
-                <MudIconButton OnClick="@(() => OpenUpdateDialog(@context.Item))" Icon="@Icons.Material.Outlined.Edit" Size="@Size.Small" />
-                <MudIconButton OnClick="@(() => Delete(@context.Item))" Icon="@Icons.Material.Outlined.Delete" Size="@Size.Small" />
-            </CellTemplate>
-        </Column>
+        @if (claims.Count() > 0)
+        {
+            <Column T="Equipment" Title="Действия" StickyRight="true" Sortable="false" Filterable="false">
+                <CellTemplate>
+                    <MudIconButton OnClick="@(() => OpenUpdateDialog(@context.Item))" Icon="@Icons.Material.Outlined.Edit" Size="@Size.Small" />
+                    <MudIconButton OnClick="@(() => Delete(@context.Item))" Icon="@Icons.Material.Outlined.Delete" Size="@Size.Small" />
+                </CellTemplate>
+            </Column>
+        }
     </Columns>
     <ChildRowContent>
         <MudCard>
@@ -68,16 +73,22 @@
     </PagerContent>
 </MudDataGrid>
 
-<MudButton Href="addEquipment"
-               Variant="Variant.Filled"
-               EndIcon="@Icons.Material.Filled.Add"
-               Color="Color.Primary"
-               Class="pa-3 mt-4">
-        Добавить
-</MudButton>
-
+<AuthorizeView>
+    <Authorized>
+        <MudButton Href="addEquipment"
+                   Variant="Variant.Filled"
+                   EndIcon="@Icons.Material.Filled.Add"
+                   Color="Color.Primary"
+                   Class="pa-3 mt-4">
+            Добавить
+        </MudButton>
+    </Authorized>
+</AuthorizeView>
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+    private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
     private string _searchString;
 
     private Equipment equipment = new Equipment();
@@ -99,6 +110,18 @@
         people = responsePersonService.GetAll();
         types = typeEquipmentService.GetAll();
         equipments = equipmentService.GetAll();
+
+        if (authenticationState is not null)
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                claims = user.Claims;
+            }            
+        }
+
     }
 
     private Func<Equipment, bool> _quickFilter => x =>

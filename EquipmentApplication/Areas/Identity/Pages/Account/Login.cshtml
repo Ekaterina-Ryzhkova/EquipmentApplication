@@ -1,31 +1,36 @@
 ﻿@page
 @model EquipmentApplication.Areas.Identity.Pages.Account.LoginModel
-@{
-    ViewData["Title"] = "Log in";
-}
 
-<h1>Вход в аккаунт</h1>
-<div class="row" style="margin:50px">
-    <div class="col-md-4">
-        <section>
+<div class="container">
+    <div class="card" style="width: 320px;margin: 0 auto; align-items:center;background-color: #f5f5f5;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" fill="currentColor" class="bi bi-box-arrow-in-right mb-4 mt-4" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0v-2z" />
+            <path fill-rule="evenodd" d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z" />
+        </svg>
+        <div class="card-body">
+            <h1 class="h3 mb-3 font-weight-normal" style="text-align: center;">Вход в аккаунт</h1>
             <form id="Account" method="post">
-                <h2>Use a local account to Log in</h2>
-                <h2 />
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="form-floating" style="margin:10px">
-                    <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" />
-                    <label asp-for="Input.Email" class="form-label"></label>
-                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                <div class="form-group mb-4">
+                    <div class="col-md-12">
+                        @Html.TextBoxFor(m => m.Input.Email, new { @class = "form-control", @placeholder = "Email" })
+                        <span asp-validation-for="Input.Email" class="text-danger fs-6 font-monospace"></span>
+                    </div>
                 </div>
-                <div class="form-floating" style="margin:10px">
-                    <input asp-for="Input.Password" class="form-control" autocomplete="username" aria-required="true" />
-                    <label asp-for="Input.Password" class="form-label"></label>
-                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+
+                <div class="form-group mb-4">
+                    <div class="col-md-12">
+                        @Html.TextBoxFor(m => m.Input.Password, new { @class = "form-control", @placeholder = "Password" })
+                        <span asp-validation-for="Input.Password" class="text-danger fs-6 font-monospace"></span>
+                    </div>
                 </div>
-                <div style="margin:10px">
-                    <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary">Войти</button>
+                    </div>
                 </div>
             </form>
-        </section>
+        </div>
+        <p class="mt-5 mb-3 text-muted">© @DateTime.Now.Year </p>
     </div>
 </div>

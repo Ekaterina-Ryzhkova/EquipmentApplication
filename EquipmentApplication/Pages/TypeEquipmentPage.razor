@@ -68,10 +68,10 @@
     private TypeEquipment type = new TypeEquipment();
     private List<TypeEquipment> typeequipments = new List<TypeEquipment>();
 
-    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    private List<MudBlazor.BreadcrumbItem> _items = new List<MudBlazor.BreadcrumbItem>
     {
-        new BreadcrumbItem("Главная", href: "/"),
-        new BreadcrumbItem("Типы оборудования", href: null, disabled: true)
+        new MudBlazor.BreadcrumbItem("Главная", href: "/"),
+        new MudBlazor.BreadcrumbItem("Типы оборудования", href: null, disabled: true)
     };
 
     protected override async Task OnInitializedAsync()

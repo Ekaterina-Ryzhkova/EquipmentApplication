@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Blazorise;
+using Blazorise.Bootstrap;
+using Blazorise.Icons.FontAwesome;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +36,12 @@ builder.Services.AddScoped<ResponsePersonService>();
 //OtherServices
 builder.Services.AddMudServices();
 builder.Services.AddMudBlazorDialog();
+builder.Services.AddBlazorise(options => 
+{
+        options.Immediate = true;
+})
+    .AddBootstrapProviders()
+    .AddFontAwesomeIcons();
 
 var app = builder.Build();
 

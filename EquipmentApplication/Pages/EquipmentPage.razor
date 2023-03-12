@@ -129,7 +129,10 @@
         if (string.IsNullOrWhiteSpace(_searchString))
             return true;
 
-        if (x.InventoryId.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        if (x.TypeId.ToString().Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.PersonId.ToString().Contains(_searchString, StringComparison.OrdinalIgnoreCase))
             return true;
 
         return false;
